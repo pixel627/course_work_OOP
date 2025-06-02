@@ -1,0 +1,139 @@
+@startuml
+class Client {
+  - id_: int
+  - name_: std::string
+  - contact_: std::string
+  - registration_date_: time_t
+  - reservation_ids_: std::vector<int>
+  + update_contact()
+  + add_reservation()
+  + validate_contact()
+}
+
+class Product {
+  - id_: int
+  - name_: std::string
+  - category_: Category
+  - price_: double
+  - stock_: int
+  + sell()
+  + restock()
+  + set_price()
+  + set_category()
+}
+
+class Reservation {
+  - id_: int
+  - client_id_: int
+  - seat_id_: int
+  - start_time_: time_t
+  - end_time_: time_t
+  - status_: Status
+  - total_cost_: double
+  + cancel()
+  + activate()
+  + complete()
+  + set_total_cost()
+}
+
+class Seat {
+  - id_: int
+  - type_: Type
+  - hardware_spec_: std::string
+  - status_: Status
+  + set_status()
+  + update_hardware()
+}
+
+class Tariff {
+  - id_: int
+  - name_: std::string
+  - base_rate_: double
+  - period_: Period
+  - discounts_: std::vector<Discount>
+  + calculate_cost()
+  + add_discount()
+  + is_discount_active()
+}
+
+class Discount {
+  - percent: double
+  - start: time_t
+  - end: time_t
+}
+
+' Ядро системы
+class ClubSystem {
+  - seats_: std::vector<Seat>
+  - clients_: std::unordered_map<int, Client>
+  - products_: std::unordered_map<int, Product>
+  - reservation_manager_: ReservationManager*
+  + initialize()
+  + shutdown()
+  + create_client()
+  + update_client()
+  + add_product()
+  + sell_product()
+  + get_products()
+  + update_seat_status()
+  + initialize_default_seats()
+  + addSeat()
+}
+
+class DatabaseManager {
+  - db_: sqlite3*
+  + instance()
+  + connect()
+  + disconnect()
+  + execute()
+  + fetch_all()
+  + begin_transaction()
+  + commit_transaction()
+  + rollback_transaction()
+}
+
+class ReservationManager {
+  - clubSystem_: ClubSystem&
+  - db_: DatabaseManager&
+  + create_reservation()
+  + cancel_reservation()
+  + find_reservations()
+  + is_available()
+  + calculate_price()
+}
+
+class UI {
+  - clubSystem: ClubSystem&
+  + start()
+  + showSeats()
+  + handleNewReservation()
+  + clientManagementMenu()
+  + salesMenu()
+  + seatManagementMenu()
+}
+
+ClubSystem  *--  Seat
+ClubSystem  *--  Client
+ClubSystem  *--  Product
+ClubSystem  o--  ReservationManager
+
+ReservationManager  -->  Reservation
+ReservationManager --> ClubSystem
+ReservationManager --> DatabaseManager
+
+Reservation  -->  Client
+Reservation  -->  Seat 
+
+DatabaseManager --> ClubSystem
+DatabaseManager -->  Client
+DatabaseManager -->  Seat
+DatabaseManager -->  Product
+DatabaseManager -->  Reservation
+
+UI --> ClubSystem
+UI --> ReservationManager
+
+Tariff  *--  Discount
+Tariff --> Seat 
+Product --> ClubSystem
+@enduml
